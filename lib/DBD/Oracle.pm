@@ -393,6 +393,7 @@ BEGIN {
                  ora_session_mode	=> undef,
                  ora_verbose		=> undef,
                  ora_oci_success_warn	=> undef,
+                 ora_call_timeout	=> undef,
                  ora_objects		=> undef,
                  ora_ncs_buff_mtpl	=> undef,
                  ora_drcp		=> undef,
@@ -1813,6 +1814,23 @@ when an execute or fetch returns "Success With Info" or when you want
 to tune RowCaching and LOB Reads
 
   $dbh->{ora_oci_success_warn} = 1;
+
+=head4 ora_call_timeout
+
+The time limit, in milliseconds, of each round trip to the server on
+this database handle (C<OCI_ATTR_CALL_TIMEOUT>). A call that runs past
+it fails with C<ORA-03156: OCI call timed out>, and the connection
+stays usable. 0, the default, means no limit. The value can change at
+any time and applies to the next call.
+
+  $dbh->{ora_call_timeout} = 2000;
+
+The limit is per round trip, not per statement: a fetch that needs
+several round trips gets the limit for each of them. On a dead network
+link the call ends at about twice the limit, and the connection is lost.
+
+Needs Oracle client 18c or later. With older client headers, setting
+the attribute croaks.
 
 =head4 ora_objects
 

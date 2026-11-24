@@ -1157,6 +1157,23 @@ dbd_db_STORE_attrib(SV *dbh, imp_dbh_t *imp_dbh, SV *keysv, SV *valuesv)
 
 	}
 #endif
+#ifdef OCI_ATTR_CALL_TIMEOUT
+	else if (kl==16 && strEQ(key, "ora_call_timeout") ) {
+		/* milliseconds for each round trip on this service context; 0 = no limit */
+		ub4 call_timeout = (ub4) SvUV(valuesv);
+		OCIAttrSet_log_stat(imp_dbh, imp_dbh->svchp, OCI_HTYPE_SVCCTX, &call_timeout, 0,
+			OCI_ATTR_CALL_TIMEOUT, imp_dbh->errhp, status);
+		if (status != OCI_SUCCESS) {
+			oci_error(dbh, imp_dbh->errhp, status, "OCIAttrSet OCI_ATTR_CALL_TIMEOUT");
+			return FALSE;
+		}
+	}
+#else
+	else if (kl==16 && strEQ(key, "ora_call_timeout") ) {
+		/* the client headers have no per-call timeout: fail rather than ignore the limit */
+		croak("ora_call_timeout needs Oracle client 18c or later");
+	}
+#endif
 	else if (kl==20 && strEQ(key, "ora_oci_success_warn") ) {
 		oci_warn = SvIV (valuesv);
 	}

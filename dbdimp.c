@@ -1159,8 +1159,14 @@ dbd_db_STORE_attrib(SV *dbh, imp_dbh_t *imp_dbh, SV *keysv, SV *valuesv)
 #endif
 #ifdef OCI_ATTR_CALL_TIMEOUT
 	else if (kl==16 && strEQ(key, "ora_call_timeout") ) {
-		/* milliseconds for each round trip on this service context; 0 = no limit */
-		ub4 call_timeout = (ub4) SvUV(valuesv);
+		/* milliseconds for each round trip on this service context; 0 or undef = no limit */
+		ub4 call_timeout = 0;
+		if (SvOK(valuesv)) {
+			NV ms = SvNV(valuesv);
+			if (ms < 0 || ms > 4294967295.0)
+				croak("ora_call_timeout must be 0 or a positive number of milliseconds");
+			call_timeout = (ub4) ms;
+		}
 		OCIAttrSet_log_stat(imp_dbh, imp_dbh->svchp, OCI_HTYPE_SVCCTX, &call_timeout, 0,
 			OCI_ATTR_CALL_TIMEOUT, imp_dbh->errhp, status);
 		if (status != OCI_SUCCESS) {

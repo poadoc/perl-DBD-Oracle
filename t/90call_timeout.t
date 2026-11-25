@@ -26,7 +26,7 @@ if ( !$sleep ) {
     plan skip_all => "DBMS_SESSION.SLEEP is not available: $DBI::errstr\n";
 }
 
-plan tests => 7;
+plan tests => 11;
 
 $dbh->{ora_call_timeout} = 1000;
 is( $dbh->{ora_call_timeout}, 1000, 'ora_call_timeout reads back the value set' );
@@ -43,6 +43,24 @@ is( $one, 1, 'the connection is usable after the timeout' );
 
 $dbh->{ora_call_timeout} = 0;
 ok( $sleep->execute(1), 'ora_call_timeout 0 means no limit' );
+
+{
+    my @warnings;
+    local $SIG{__WARN__} = sub { push @warnings, @_ };
+    $dbh->{ora_call_timeout} = 1000;
+    $dbh->{ora_call_timeout} = undef;
+    is( scalar @warnings, 0, 'setting ora_call_timeout to undef does not warn' );
+    ok( $sleep->execute(2), 'ora_call_timeout undef means no limit' );
+}
+
+foreach my $bad ( -10, 4294967296 ) {
+    my $set = eval { $dbh->{ora_call_timeout} = $bad; 1 };
+    like(
+        $set ? '' : $@,
+        qr/ora_call_timeout must be 0 or a positive number of milliseconds/,
+        "setting ora_call_timeout to $bad croaks"
+    );
+}
 
 $dbh->disconnect;
 

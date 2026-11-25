@@ -1820,8 +1820,9 @@ to tune RowCaching and LOB Reads
 The time limit, in milliseconds, of each round trip to the server on
 this database handle (C<OCI_ATTR_CALL_TIMEOUT>). A call that runs past
 it fails with C<ORA-03156: OCI call timed out>, and the connection
-stays usable. 0, the default, means no limit. The value can change at
-any time and applies to the next call.
+stays usable. 0, the default, and undef mean no limit. A negative value,
+or one above 4294967295, croaks. The value can change at any time and
+applies to the next call.
 
   $dbh->{ora_call_timeout} = 2000;
 

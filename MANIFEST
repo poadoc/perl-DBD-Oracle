@@ -87,6 +87,7 @@ t/58object.t
 t/60reauth.t
 t/70meta.t
 t/80ora_charset.t
+t/90call_timeout.t
 t/lib/ExecuteArray.pm
 t/nchar_test_lib.pl
 t/rt13865.t
